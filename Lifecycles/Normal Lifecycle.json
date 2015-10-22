@@ -1,0 +1,68 @@
+{
+  "$type": "Octopus.Core.Model.Lifecycles.Lifecycle, Octopus.Core",
+  "Id": "Lifecycles-21",
+  "Name": "Normal Lifecycle",
+  "Description": "Deploy to Dev, and manually promote to Test and Production environments.",
+  "Phases": [
+    {
+      "Id": "0f7edae5-57b6-45b3-bfa3-ce65d28d1a30",
+      "Name": "Dev",
+      "AutomaticDeploymentTargets": [
+        "Environments-1"
+      ],
+      "OptionalDeploymentTargets": [],
+      "MinimumEnvironmentsBeforePromotion": 0,
+      "ReleaseRetentionPolicy": {
+        "Unit": "Items",
+        "QuantityToKeep": 0,
+        "ShouldKeepForever": true
+      },
+      "TentacleRetentionPolicy": {
+        "Unit": "Items",
+        "QuantityToKeep": 0,
+        "ShouldKeepForever": true
+      }
+    },
+    {
+      "Id": "4400a3aa-5a97-4867-8a76-f40b221b290c",
+      "Name": "Test",
+      "AutomaticDeploymentTargets": [],
+      "OptionalDeploymentTargets": [
+        "Environments-4"
+      ],
+      "MinimumEnvironmentsBeforePromotion": 0,
+      "ReleaseRetentionPolicy": null,
+      "TentacleRetentionPolicy": null
+    },
+    {
+      "Id": "d369aad9-e002-4553-99df-fddb398429d9",
+      "Name": "Production",
+      "AutomaticDeploymentTargets": [],
+      "OptionalDeploymentTargets": [
+        "Environments-2",
+        "Environments-3"
+      ],
+      "MinimumEnvironmentsBeforePromotion": 0,
+      "ReleaseRetentionPolicy": {
+        "Unit": "Items",
+        "QuantityToKeep": 3,
+        "ShouldKeepForever": false
+      },
+      "TentacleRetentionPolicy": {
+        "Unit": "Items",
+        "QuantityToKeep": 3,
+        "ShouldKeepForever": false
+      }
+    }
+  ],
+  "ReleaseRetentionPolicy": {
+    "Unit": "Items",
+    "QuantityToKeep": 3,
+    "ShouldKeepForever": false
+  },
+  "TentacleRetentionPolicy": {
+    "Unit": "Items",
+    "QuantityToKeep": 3,
+    "ShouldKeepForever": false
+  }
+}

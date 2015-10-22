@@ -1,0 +1,179 @@
+{
+  "$type": "Octopus.Core.Model.Projects.DeploymentProcess, Octopus.Core",
+  "Id": "deploymentprocess-Projects-1",
+  "OwnerId": "Projects-1",
+  "Version": 86,
+  "Steps": [
+    {
+      "Id": "c6462013-7c60-407b-a53a-1154cb07e5b9",
+      "Name": "Determine App Instance Name",
+      "Condition": "Success",
+      "StartTrigger": "StartAfterPrevious",
+      "RequiresPackagesToBeAcquired": true,
+      "Actions": [
+        {
+          "Id": "4f352751-d9ad-4b2d-828b-c58c0f9dfa23",
+          "Name": "Determine App Instance Name",
+          "ActionType": "Octopus.AzurePowerShell",
+          "Environments": [],
+          "Channels": [],
+          "Properties": {
+            "Octopus.Action.Azure.AccountId": "#{AzureAccount}",
+            "Octopus.Action.Script.ScriptBody": "$version = $OctopusParameters[\"Octopus.Release.Number\"]\n$environment = $OctopusParameters[\"Octopus.Environment.Name\"]\n$subscriptionId = $OctopusParameters[\"Octopus.Action.Azure.SubscriptionId\"]\n$uniquifier = $subscriptionId.Split(\"-\")[0]\n\nWrite-Host \"Package Version: $version\"\n\n$name = \"### UNKNOWN ###\"\n$isPreRelease = $version -match \"-(?<name>\\p{L}*)\"\nif ($isPreRelease) {\n    $name = $matches['name']\n} else {\n    $name = $environment\n}\n\n$appInstanceName = \"$name-$uniquifier\"\n$webAppName = \"$projectName-$appInstanceName\"\n\nSet-OctopusVariable -name \"AppInstanceName\" -value $appInstanceName\nWrite-Output \"AppInstanceName: $appInstanceName\""
+          }
+        }
+      ],
+      "Properties": {}
+    },
+    {
+      "Id": "0a90a0c6-a052-4b8c-8b6f-8cdfdbc185d6",
+      "Name": "Ensure Web App",
+      "Condition": "Success",
+      "StartTrigger": "StartAfterPrevious",
+      "RequiresPackagesToBeAcquired": false,
+      "Actions": [
+        {
+          "Id": "3e22b1aa-797e-4b84-9ff4-7f71a960ce46",
+          "Name": "Ensure Web App",
+          "ActionType": "Octopus.AzurePowerShell",
+          "Environments": [],
+          "Channels": [],
+          "Properties": {
+            "Octopus.Action.Azure.AccountId": "#{AzureAccount}",
+            "Octopus.Action.Script.ScriptBody": "$projectName = $OctopusParameters[\"Octopus.Project.Name\"].Replace(\".\", \"-\")\n$appInstanceName = $OctopusParameters[\"Octopus.Action[Determine App Instance Name].Output.AppInstanceName\"]\n$azureLocation = $OctopusParameters[\"AzureLocation\"]\n\n$webAppName = \"$projectName-$appInstanceName\"\nWrite-Output \"WebAppName: $webAppName\"\n\n$existingWebApp = Get-AzureWebSite -Name $webAppName\nif ($existingWebApp) {\n    Write-Host \"Web App named $webAppName already exists, no need to provision it.\"\n} else {\n    Write-Host \"Creating new Web App named $webAppName in $azureLocation...\"\n    New-AzureWebSite -Name $webAppName -Location $azureLocation\n}\n\nSet-OctopusVariable -name \"WebAppName\" -value $webAppName\nSet-OctopusVariable -Name \"WebAppUrl\" -Value (\"https://{0}.azurewebsites.net\" -f $webAppName.ToLowerInvariant())"
+          }
+        }
+      ],
+      "Properties": {}
+    },
+    {
+      "Id": "768f02c4-9027-4bc8-93c3-4d8c766c0041",
+      "Name": "Deploy Web App",
+      "Condition": "Success",
+      "StartTrigger": "StartAfterPrevious",
+      "RequiresPackagesToBeAcquired": false,
+      "Actions": [
+        {
+          "Id": "37ccb7fe-5cda-4ea6-9967-379cadb1b58a",
+          "Name": "Deploy Web App",
+          "ActionType": "Octopus.AzureWebApp",
+          "Environments": [],
+          "Channels": [],
+          "Properties": {
+            "Octopus.Action.Package.NuGetFeedId": "feeds-builtin",
+            "Octopus.Action.Azure.AccountId": "#{AzureAccount}",
+            "Octopus.Action.Azure.WebAppName": "#{Octopus.Action[Ensure Web App].Output.WebAppName}",
+            "Octopus.Action.Package.NuGetPackageId": "Channels.OrderService",
+            "Octopus.Action.Azure.RemoveAdditionalFiles": "True",
+            "Octopus.Action.Azure.PreserveAppData": "True"
+          }
+        }
+      ],
+      "Properties": {}
+    },
+    {
+      "Id": "40fceeee-ce66-4847-b221-a3f00f405a24",
+      "Name": "Slack - Notify #testing of new Test Build",
+      "Condition": "Success",
+      "StartTrigger": "StartAfterPrevious",
+      "RequiresPackagesToBeAcquired": false,
+      "Actions": [
+        {
+          "Id": "e170b246-d40e-4d4d-88af-e6cd27364ffc",
+          "Name": "Slack - Notify #testing of new Test Build",
+          "ActionType": "Octopus.Script",
+          "Environments": [
+            "Environments-4"
+          ],
+          "Channels": [],
+          "Properties": {
+            "Octopus.Action.Script.ScriptBody": "function Slack-Rich-Notification ($notification)\n{\n    $payload = @{\n        channel = $OctopusParameters['Channel']\n        username = $OctopusParameters['Username'];\n        icon_url = $OctopusParameters['IconUrl'];\n        attachments = @(\n            @{\n            fallback = $notification[\"fallback\"];\n            color = $notification[\"color\"];\n            fields = @(\n                @{\n                title = $notification[\"title\"];\n                value = $notification[\"value\"];\n                });\n            };\n        );\n    }\n\n    Invoke-RestMethod -Method POST -Body ($payload | ConvertTo-Json -Depth 4) -Uri $OctopusParameters['HookUrl']\n}\n\nSlack-Rich-Notification @{\n    title = \"$Title\";\n    value = \"$Value\";\n    fallback = \"$Fallback\";\n    color = \"$Color\";\n};\n",
+            "Octopus.Action.Script.Syntax": "PowerShell",
+            "Octopus.Action.Template.Id": "ActionTemplates-1",
+            "Octopus.Action.Template.Version": "8",
+            "IconUrl": "http://octopusdeploy.com/content/resources/favicon.png",
+            "Username": "OctopusDeploy",
+            "Color": "good",
+            "HookUrl": "#{SlackWebHookUrl}",
+            "Channel": "#{SlackChannel}",
+            "Title": "#{Octopus.Project.Name} #{Octopus.Release.Number} is ready for testing",
+            "Value": "#{Octopus.Project.Name} #{Octopus.Release.Number} was just deployed to #{Octopus.Environment.Name} and is available at  #{Octopus.Action[Ensure Web App].Output.WebAppUrl}.\n\nRelease Notes\n#{Octopus.Release.Notes}",
+            "Fallback": "#{Octopus.Project.Name} #{Octopus.Release.Number} is ready for testing"
+          }
+        }
+      ],
+      "Properties": {
+        "Octopus.Action.TargetRoles": "Octopus Server"
+      }
+    },
+    {
+      "Id": "f7fdfa30-bca0-4474-ad05-07a30e75bfa9",
+      "Name": "Slack - Notify #general Production Release",
+      "Condition": "Success",
+      "StartTrigger": "StartAfterPrevious",
+      "RequiresPackagesToBeAcquired": false,
+      "Actions": [
+        {
+          "Id": "53351e5d-40af-499b-9012-a8506fd28bfd",
+          "Name": "Slack - Notify #general Production Release",
+          "ActionType": "Octopus.Script",
+          "Environments": [
+            "Environments-2",
+            "Environments-3"
+          ],
+          "Channels": [],
+          "Properties": {
+            "Octopus.Action.Script.ScriptBody": "function Slack-Rich-Notification ($notification)\n{\n    $payload = @{\n        channel = $OctopusParameters['Channel']\n        username = $OctopusParameters['Username'];\n        icon_url = $OctopusParameters['IconUrl'];\n        attachments = @(\n            @{\n            fallback = $notification[\"fallback\"];\n            color = $notification[\"color\"];\n            fields = @(\n                @{\n                title = $notification[\"title\"];\n                value = $notification[\"value\"];\n                });\n            };\n        );\n    }\n\n    Invoke-RestMethod -Method POST -Body ($payload | ConvertTo-Json -Depth 4) -Uri $OctopusParameters['HookUrl']\n}\n\nSlack-Rich-Notification @{\n    title = \"$Title\";\n    value = \"$Value\";\n    fallback = \"$Fallback\";\n    color = \"$Color\";\n};\n",
+            "Octopus.Action.Script.Syntax": "PowerShell",
+            "Octopus.Action.Template.Id": "ActionTemplates-1",
+            "Octopus.Action.Template.Version": "8",
+            "IconUrl": "http://octopusdeploy.com/content/resources/favicon.png",
+            "Username": "OctopusDeploy",
+            "Color": "good",
+            "HookUrl": "#{SlackWebHookUrl}",
+            "Channel": "#{SlackChannel}",
+            "Title": "Production deployment of #{Octopus.Project.Name} #{Octopus.Release.Number} to #{AzureLocation}",
+            "Value": "#{Octopus.Project.Name} #{Octopus.Release.Number} was just deployed to #{Octopus.Environment.Name} and is available at  #{Octopus.Action[Ensure Web App].Output.WebAppUrl}.\n\nRelease Notes\n#{Octopus.Release.Notes}",
+            "Fallback": "Production deployment of #{Octopus.Project.Name} #{Octopus.Release.Number} to #{AzureLocation}"
+          }
+        }
+      ],
+      "Properties": {
+        "Octopus.Action.TargetRoles": "Octopus Server"
+      }
+    },
+    {
+      "Id": "bdc271de-0434-422d-bbf3-36f12494bde3",
+      "Name": "Slack - Notify of deployment failure",
+      "Condition": "Failure",
+      "StartTrigger": "StartAfterPrevious",
+      "RequiresPackagesToBeAcquired": false,
+      "Actions": [
+        {
+          "Id": "505cc0f0-0f37-4fde-a9ec-c2b8becb3a6d",
+          "Name": "Slack - Notify of deployment failure",
+          "ActionType": "Octopus.Script",
+          "Environments": [],
+          "Channels": [],
+          "Properties": {
+            "Octopus.Action.Script.ScriptBody": "function Slack-Rich-Notification ($notification)\n{\n    $payload = @{\n        channel = $OctopusParameters['Channel']\n        username = $OctopusParameters['Username'];\n        icon_url = $OctopusParameters['IconUrl'];\n        attachments = @(\n            @{\n            fallback = $notification[\"fallback\"];\n            color = $notification[\"color\"];\n            fields = @(\n                @{\n                title = $notification[\"title\"];\n                value = $notification[\"value\"];\n                });\n            };\n        );\n    }\n\n    Invoke-RestMethod -Method POST -Body ($payload | ConvertTo-Json -Depth 4) -Uri $OctopusParameters['HookUrl']\n}\n\nSlack-Rich-Notification @{\n    title = \"$Title\";\n    value = \"$Value\";\n    fallback = \"$Fallback\";\n    color = \"$Color\";\n};\n",
+            "Octopus.Action.Script.Syntax": "PowerShell",
+            "Octopus.Action.Template.Id": "ActionTemplates-1",
+            "Octopus.Action.Template.Version": "8",
+            "IconUrl": "http://octopusdeploy.com/content/resources/favicon.png",
+            "Username": "OctopusDeploy",
+            "Color": "danger",
+            "HookUrl": "#{SlackWebHookUrl}",
+            "Channel": "#{SlackChannel}",
+            "Title": "Deployment of #{Octopus.Project.Name} #{Octopus.Release.Number} to #{Octopus.Environment.Name} failed!",
+            "Fallback": "Deployment of #{Octopus.Project.Name} #{Octopus.Release.Number} to #{Octopus.Environment.Name} failed!",
+            "Value": "Detailed deployment log: http://localhost#{Octopus.Web.DeploymentLink}\""
+          }
+        }
+      ],
+      "Properties": {
+        "Octopus.Action.TargetRoles": "Octopus Server"
+      }
+    }
+  ]
+}

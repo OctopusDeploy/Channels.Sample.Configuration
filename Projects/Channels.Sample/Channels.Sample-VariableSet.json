@@ -1,0 +1,61 @@
+{
+  "$type": "Octopus.Core.Model.Variables.VariableSet, Octopus.Core",
+  "Id": "variableset-Projects-1",
+  "OwnerId": "Projects-1",
+  "Version": 15,
+  "Variables": [
+    {
+      "Id": "aca02034-5b11-8533-cae8-785a6febe492",
+      "Name": "AzureAccount",
+      "Value": "azuresubscription-channelssample-production",
+      "Scope": {
+        "Environment": [
+          "Environments-2",
+          "Environments-3"
+        ]
+      }
+    },
+    {
+      "Id": "27f163b3-1be2-8932-0abe-115678891de7",
+      "Name": "AzureAccount",
+      "Value": "azuresubscription-channelssample-test",
+      "Scope": {
+        "Environment": [
+          "Environments-1",
+          "Environments-4"
+        ]
+      }
+    },
+    {
+      "Id": "195f5b22-c1f3-6633-1d18-250b403a9fd6",
+      "Name": "AzureLocation",
+      "Value": "AustraliaSoutheast",
+      "Scope": {
+        "Environment": [
+          "Environments-2"
+        ]
+      }
+    },
+    {
+      "Id": "f27e2be9-4eb5-44d8-854d-c82cefc279da",
+      "Name": "AzureLocation",
+      "Value": "SoutheastAsia",
+      "Scope": {
+        "Environment": [
+          "Environments-1",
+          "Environments-4"
+        ]
+      }
+    },
+    {
+      "Id": "e46a742b-d695-e094-c8cc-0522dbdc133e",
+      "Name": "AzureLocation",
+      "Value": "WestUS",
+      "Scope": {
+        "Environment": [
+          "Environments-3"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "$type": "Octopus.Migrator.ExportProcess.ServerMetadata, Octopus.Migrator",
+  "Id": "MIKE-2012R2",
+  "Name": "MIKE-2012R2",
+  "Created": "2015-10-21T16:29:30.839006+10:00",
+  "DatabaseVersion": "3.0.0",
+  "Hello": "n/obuqor3CiQ1pn+sfrksA==|AAAAAAAAAAAAAAAAAAAAAA=="
+}

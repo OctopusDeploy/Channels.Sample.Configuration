@@ -1,0 +1,44 @@
+{
+  "$type": "Octopus.Core.Model.Variables.VariableSet, Octopus.Core",
+  "Id": "variableset-LibraryVariableSets-1",
+  "OwnerId": "LibraryVariableSets-1",
+  "Version": 9,
+  "Variables": [
+    {
+      "Id": "7049efe5-3b88-8600-652a-7bdea9af7822",
+      "Name": "SlackWebHookUrl",
+      "Value": null
+    },
+    {
+      "Id": "6ee28046-6095-6150-caf2-7ac1bcc38f8f",
+      "Name": "SlackChannel",
+      "Value": "#testing",
+      "Scope": {
+        "Environment": [
+          "Environments-4"
+        ]
+      }
+    },
+    {
+      "Id": "7e5c98f9-f3c1-ad03-6c59-13d76e31c483",
+      "Name": "SlackChannel",
+      "Value": "#general",
+      "Scope": {
+        "Environment": [
+          "Environments-2",
+          "Environments-3"
+        ]
+      }
+    },
+    {
+      "Id": "d8b60baf-1ad1-af05-9986-cbba9028193c",
+      "Name": "SlackChannel",
+      "Value": "#pulse",
+      "Scope": {
+        "Environment": [
+          "Environments-1"
+        ]
+      }
+    }
+  ]
+}

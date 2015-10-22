@@ -1,0 +1,78 @@
+{
+  "$type": "Octopus.Core.Model.Projects.ActionTemplate, Octopus.Core",
+  "Id": "ActionTemplates-1",
+  "Name": "Slack - Post Message",
+  "Description": "Posts a message to a Slack Channel",
+  "Version": 8,
+  "ActionType": "Octopus.Script",
+  "Properties": {
+    "Octopus.Action.Script.ScriptBody": "function Slack-Rich-Notification ($notification)\n{\n    $payload = @{\n        channel = $OctopusParameters['Channel']\n        username = $OctopusParameters['Username'];\n        icon_url = $OctopusParameters['IconUrl'];\n        attachments = @(\n            @{\n            fallback = $notification[\"fallback\"];\n            color = $notification[\"color\"];\n            fields = @(\n                @{\n                title = $notification[\"title\"];\n                value = $notification[\"value\"];\n                });\n            };\n        );\n    }\n\n    Invoke-RestMethod -Method POST -Body ($payload | ConvertTo-Json -Depth 4) -Uri $OctopusParameters['HookUrl']\n}\n\nSlack-Rich-Notification @{\n    title = \"$Title\";\n    value = \"$Value\";\n    fallback = \"$Fallback\";\n    color = \"$Color\";\n};\n",
+    "Octopus.Action.Script.Syntax": "PowerShell"
+  },
+  "Parameters": [
+    {
+      "Name": "HookUrl",
+      "Label": "Webhook URL",
+      "HelpText": "The Webhook URL provided by Slack, including token.",
+      "DefaultValue": null,
+      "DisplaySettings": {}
+    },
+    {
+      "Name": "Channel",
+      "Label": "Channel",
+      "HelpText": "Which Slack channel to post notifications to.",
+      "DefaultValue": null,
+      "DisplaySettings": {}
+    },
+    {
+      "Name": "IconUrl",
+      "Label": "Icon URL",
+      "HelpText": "The icon to use for this user in Slack",
+      "DefaultValue": "http://octopusdeploy.com/content/resources/favicon.png",
+      "DisplaySettings": {}
+    },
+    {
+      "Name": "Username",
+      "Label": null,
+      "HelpText": "The username shown in Slack against these notifications",
+      "DefaultValue": "OctopusDeploy",
+      "DisplaySettings": {}
+    },
+    {
+      "Name": "Title",
+      "Label": "Title",
+      "HelpText": "The title to display for the message",
+      "DefaultValue": null,
+      "DisplaySettings": {
+        "Octopus.ControlType": "SingleLineText"
+      }
+    },
+    {
+      "Name": "Value",
+      "Label": "Value",
+      "HelpText": "The value to use for the message",
+      "DefaultValue": null,
+      "DisplaySettings": {
+        "Octopus.ControlType": "MultiLineText"
+      }
+    },
+    {
+      "Name": "Fallback",
+      "Label": "Fallback",
+      "HelpText": "The fallback value to use for the message",
+      "DefaultValue": null,
+      "DisplaySettings": {
+        "Octopus.ControlType": "SingleLineText"
+      }
+    },
+    {
+      "Name": "Color",
+      "Label": "Color",
+      "HelpText": "The color of the message, either good, warning, danger, or any hex color code (eg. #439FE0)\n\nhttps://api.slack.com/docs/attachments",
+      "DefaultValue": "good",
+      "DisplaySettings": {
+        "Octopus.ControlType": "SingleLineText"
+      }
+    }
+  ]
+}

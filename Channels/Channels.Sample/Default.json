@@ -1,0 +1,10 @@
+{
+  "$type": "Octopus.Core.Model.Projects.Channel, Octopus.Core",
+  "Id": "Channels-1",
+  "Name": "Default",
+  "Description": "",
+  "ProjectId": "Projects-1",
+  "LifecycleId": null,
+  "IsDefault": true,
+  "Rules": []
+}

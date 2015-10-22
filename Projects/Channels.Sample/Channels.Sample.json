@@ -1,0 +1,30 @@
+{
+  "$type": "Octopus.Core.Model.Projects.Project, Octopus.Core",
+  "Id": "Projects-1",
+  "Name": "Channels.Sample",
+  "Description": "https://octopus.com/blog/channels-walkthrough",
+  "Slug": "channels-sample",
+  "IsDisabled": false,
+  "VariableSetId": "variableset-Projects-1",
+  "DeploymentProcessId": "deploymentprocess-Projects-1",
+  "ProjectGroupId": "ProjectGroups-1",
+  "LifecycleId": "Lifecycles-21",
+  "AutoCreateRelease": false,
+  "IncludedLibraryVariableSetIds": [
+    "LibraryVariableSets-1"
+  ],
+  "UsedPackages": [
+    "ChannelTest",
+    "Channels.OrderService",
+    "Channels.InventoryJob"
+  ],
+  "DefaultToSkipIfAlreadyInstalled": false,
+  "VersioningStrategy": {
+    "DonorPackageStepId": "37ccb7fe-5cda-4ea6-9967-379cadb1b58a",
+    "Template": null
+  },
+  "ReleaseCreationStrategy": {
+    "ReleaseCreationPackageStepId": "",
+    "ChannelId": null
+  }
+}
